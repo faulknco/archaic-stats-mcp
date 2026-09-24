@@ -1,0 +1,9 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "ie.archaic/ireland-stats",
+  "description": "Read-only access to every table published by Ireland's Central Statistics Office (CSO PxStat).",
+  "version": "0.1.0",
+  "repository": { "url": "https://github.com/faulknco/archaic-stats-mcp", "source": "github" },
+  "websiteUrl": "https://stats.archaic.ie",
+  "remotes": [{ "type": "streamable-http", "url": "https://stats.archaic.ie/mcp" }]
+}
