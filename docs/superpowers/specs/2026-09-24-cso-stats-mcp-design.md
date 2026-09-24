@@ -14,7 +14,7 @@ Out of scope for version one: Irish-language output (`ga`), CSV/chart output, an
 
 - Base host `https://ws.cso.ie/public/`. JSON-RPC at `api.jsonrpc` (GET `?data=` or POST); RESTful GETs at `api.restful/PxStat.Data.Cube_API.{ReadMetadata|ReadDataset}/{matrix}/JSON-stat/2.0/en`.
 - `Navigation_API.Search {Search, LngIsoCode}` → ranked hits, hard cap 100. `Navigation_API.Read {LngIsoCode}` → theme → subject → product tree (~57 KB). `Cube_API.ReadCollection {language, product?|datefrom?}` → tables for a product (small) or updated since a date. The unfiltered collection is 24 MB and must never be fetched.
-- `Cube_API.ReadDataset` with `class:"query"` and `dimension:{DIM:{category:{index:[codes]}}}` filters server-side. Codes only; labels return HTTP 200 with `result: null`. Unlisted dimensions return all categories. Totals use code `-` per `extension.elimination`.
+- `Cube_API.ReadDataset` with `class:"query"` and `dimension:{DIM:{category:{index:[codes]}}}` filters server-side. Codes only. A code that does not exist returns HTTP 200 with a dataset whose offending dimension has an empty `category.index`, a `0` in `size`, and `value: []` (verified 2026-09-24; some responses may instead carry `result: null`; treat both as unknown codes). Unlisted dimensions return all categories. Totals use code `-` per `extension.elimination`.
 - Metadata `size[]` × filtered category counts gives the exact cell count before any data fetch.
 - Catalogue `href`s mostly point at a dead host; always build URLs from `extension.matrix`.
 - Time codes differ from labels (`20241` = 2024Q1, `199004` = 1990M04, `2020W35`, `2021M01D31`, annual `2024`). Metadata carries both.
