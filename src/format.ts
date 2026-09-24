@@ -110,7 +110,13 @@ export function formatCatalog(themes: NavTheme[], theme?: string, subject?: stri
   return { themes: themes.map((t) => ({ code: String(t.ThmCode), name: t.ThmValue, subjects: t.subject.length })) };
 }
 
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
+
 export function capText(text: string, maxBytes = 50_000): { text: string; truncated: boolean } {
-  if (text.length <= maxBytes) return { text, truncated: false };
-  return { text: text.slice(0, maxBytes) + '\n…[truncated; narrow the request]', truncated: true };
+  const bytes = encoder.encode(text);
+  if (bytes.length <= maxBytes) return { text, truncated: false };
+  // Decode a byte-bounded slice; a split multi-byte character at the cut is dropped.
+  const head = decoder.decode(bytes.subarray(0, maxBytes)).replace(/\uFFFD$/, '');
+  return { text: head + '\n…[truncated; narrow the request]', truncated: true };
 }

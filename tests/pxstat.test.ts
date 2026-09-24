@@ -62,3 +62,10 @@ describe('createPxStat', () => {
     await expect(px.search('x')).rejects.toMatchObject({ kind: 'upstream' });
   });
 });
+
+describe('search shape guard', () => {
+  it('rejects a non-array search result as an upstream error', async () => {
+    const px = createPxStat(fakeFetch([{ match: () => true, body: { jsonrpc: '2.0', result: { unexpected: true }, id: 1 } }]).fetch);
+    await expect(px.search('x')).rejects.toMatchObject({ kind: 'upstream' });
+  });
+});

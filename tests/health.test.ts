@@ -48,3 +48,11 @@ describe('landing, mcp, rate limit', () => {
     expect(res.headers.get('retry-after')).toBe('60');
   });
 });
+
+describe('health protection', () => {
+  it('rate limits /health like /mcp', async () => {
+    const limited: Env = { MCP_RATE_LIMITER: { limit: async () => ({ success: false }) } };
+    const res = await handleRequest(new Request('https://stats.archaic.ie/health'), limited);
+    expect(res.status).toBe(429);
+  });
+});

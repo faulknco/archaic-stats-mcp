@@ -64,8 +64,14 @@ describe('browse_catalog / list_tables / recent_updates', () => {
     expect((r.structuredContent as { count: number }).count).toBe(15);
   });
   it('lists recent updates', async () => {
-    const r = await client.callTool({ name: 'recent_updates', arguments: { since: '2026-09-17' } });
+    const since = new Date(Date.now() - 3 * 86_400_000).toISOString().slice(0, 10);
+    const r = await client.callTool({ name: 'recent_updates', arguments: { since } });
     expect((r.structuredContent as { tables: unknown[] }).tables.length).toBeGreaterThan(0);
+  });
+  it('refuses a since date older than 14 days', async () => {
+    const r = await client.callTool({ name: 'recent_updates', arguments: { since: '2020-01-01' } });
+    expect(r.isError).toBe(true);
+    expect(text(r)).toContain('14 days');
   });
 });
 

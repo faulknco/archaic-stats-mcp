@@ -50,7 +50,9 @@ export function createPxStat(fetchImpl: typeof fetch = fetch) {
 
   return {
     async search(q: string): Promise<SearchHit[]> {
-      return rpc<SearchHit[]>('PxStat.System.Navigation.Navigation_API.Search', { Search: q, LngIsoCode: 'en' }, TTL.search);
+      const hits = await rpc<unknown>('PxStat.System.Navigation.Navigation_API.Search', { Search: q, LngIsoCode: 'en' }, TTL.search);
+      if (!Array.isArray(hits)) throw new PxStatError('upstream', 'CSO search returned an unexpected response, try again shortly.');
+      return hits as SearchHit[];
     },
     async navigation(): Promise<NavTheme[]> {
       return rpc<NavTheme[]>('PxStat.System.Navigation.Navigation_API.Read', { LngIsoCode: 'en' }, TTL.navigation);

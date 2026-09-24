@@ -4,6 +4,7 @@ import { createPxStat, PxStatError } from './pxstat';
 import { cellCount, widestDimensions, unknownCodes, lastN, timeDimension, type Filters } from './jsonstat';
 import { summariseMetadata, formatQuery, formatSearch, formatCollection, formatCatalog, capText } from './format';
 
+const MAX_SINCE_DAYS = 14;
 const RO = { readOnlyHint: true, idempotentHint: true, destructiveHint: false, openWorldHint: true };
 const MATRIX = z.string().min(2).max(12).describe('CSO table code, e.g. EHQ03. Get codes from search_tables, list_tables or browse_catalog.');
 
@@ -94,12 +95,14 @@ export function createServer(fetchImpl: typeof fetch = fetch): McpServer {
 
   server.registerTool('recent_updates', {
     title: 'Recently updated tables',
-    description: 'Tables the CSO has released or revised since a date (default: the last seven days). Useful for "what is new" questions.',
-    inputSchema: z.object({ since: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe('ISO date, e.g. 2026-09-17'), limit: z.number().int().min(1).max(200).default(50) }),
+    description: 'Tables the CSO has released or revised since a date (default: yesterday; at most 14 days back, because the CSO returns full table descriptions and the response grows quickly). Useful for "what is new" questions.',
+    inputSchema: z.object({ since: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe('ISO date, e.g. 2026-09-23; no earlier than 14 days ago'), limit: z.number().int().min(1).max(200).default(50) }),
     annotations: RO,
   }, async ({ since, limit }) => {
     try {
-      const date = since ?? new Date(Date.now() - 7 * 86_400_000).toISOString().slice(0, 10);
+      const earliest = new Date(Date.now() - MAX_SINCE_DAYS * 86_400_000).toISOString().slice(0, 10);
+      const date = since ?? new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+      if (date < earliest) return err(`since must be ${earliest} or later (at most ${MAX_SINCE_DAYS} days back). Use search_tables or list_tables for older tables.`);
       return ok({ since: date, ...formatCollection(await px.collectionSince(date), limit) });
     } catch (e) { return fromPxStatError(e); }
   });

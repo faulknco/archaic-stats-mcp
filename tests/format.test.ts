@@ -101,4 +101,10 @@ describe('capText', () => {
     expect(r.text.length).toBeLessThanOrEqual(50_000 + 40);
     expect(capText('short').truncated).toBe(false);
   });
+  it('measures bytes, not characters', () => {
+    const r = capText('é'.repeat(30_000), 50_000); // 60,000 bytes
+    expect(r.truncated).toBe(true);
+    expect(new TextEncoder().encode(r.text).length).toBeLessThanOrEqual(50_000 + 60);
+    expect(r.text.endsWith('[truncated; narrow the request]')).toBe(true);
+  });
 });
